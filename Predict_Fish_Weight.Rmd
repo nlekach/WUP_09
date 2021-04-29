@@ -12,6 +12,8 @@ output:
 ```{r include=FALSE,echo=FALSE}
 require(tigerstats)
 require(tidyverse)
+library(car)
+library(leaps)
 ```
 
 
@@ -21,40 +23,39 @@ Breamdata<-filter(Fishdata,Species=="Bream")
 Smeltdata<-filter(Fishdata,Species=="Smelt")
 Perchdata<-filter(Fishdata,Species=="Perch")
 ```
+# Introduction and Methods
 
+Using data from the Fish.csv, we want to create models for predicting the weight of three different fish species by using other variable for that species. 
+
+First, we created new dataframes for each species of fish. Then we removed the species variable, which is a character variable, from the new dataframes to allow leaps to properly create the models.
+
+Next, for each species we drafted various regression models for predicting the weight of each species. After drafting the models, we determined which is the best model that uses two predictors for predicting the weight of each species of fish. 
+
+We used the leaps package to draft all the models and then identified the best model with two predictors for predicting weight for each species. After identifying the best model, we completed an ANOVA to determine if the best model's ability to predict weight is significantly different than the other models' abilities. 
+
+
+
+
+Null hypotheses:   
+Perch: There is no statistically significant difference between the various models for predicting perch weight.They all similarly predict the weight.  
+Bream: There is no statistically significant difference between the various models for predicting bream weight.They all similarly predict the weight.  
+Smelt: There is no statistically significant difference between the various models for predicting smelt weight.They all similarly predict the weight.  
+
+Alternate hypotheses:  
+Perch: There is a significant difference in at least one of the models' ability to predict the weight of perch.  
+Bream: There is a significant difference in at least one of the models' ability to predict the weight of bream.  
+Smelt: There is a significant difference in at least one of the models' ability to predict the weight of smelt.  
+ 
 # PERCH MODEL 
-## Introduction to PERCH Model
-
-<!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?!-->
-
-Using data from ________________, we will draft various regression models for predicting the weight of perch. After drafting the models, we will determine which is the best model for predicting the weight of this species of fish. 
-
-Null hypotheses: 
-There is no stasticially significant difference between the various perch models.They all similarly predict weight.
-
-Alternate hypotheses:
-There is a significant difference in at least one of the perch models' ability to predict weight.
-
-## Methods
-
-<!--Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method.!-->
-
-We used the leaps package to draft all the models and then identify the best model for predicting perch weight. After identifying the best model, we will complete an ANOVA to determine if the best model's ability to predict weight is significantly different than the other models' abilities.  
-
-To create these models, we first cleaned up the data by isolating just the perch data from the larger Fishdata dataframe. Then we removed the species variable, which is a character variable, to allow leaps to properly create the models.  
 
 ```{r}
 filter_Perch<-select(Perchdata,-Species)
 ```
 
 ## Results
-
-### Inferential Results
-
 <!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
 
 ```{r}
-library(leaps)
 regsubsets.out <-
     regsubsets(Weight ~ .,
                data = filter_Perch,
@@ -65,63 +66,45 @@ regsubsets.out <-
 
 summary.out <- summary(regsubsets.out)
 as.data.frame(summary.out$outmat)
-library(car)
 subsets(regsubsets.out,statistic="adjr2",legend="bottomright",main="Figure 1: Adjusted R^2 of Perch Models")
 ```
+  
+Figure one visually shows that the combination of height and width is the best model with 2 predictors. Additionally, it is the best model overall as it has the highest adjusted r-squared.  
 
-##Which is best?  
+### Which is best?  
 
 ```{r}
 which.max(summary.out$adjr2)
 ```
-Figure one visually shows that the combination and height and width have the highest adjusted R squared. Above, we confirm that option number 2, height and width, are the best predictor of weight.   
 
 ```{r}
-summary.out$which[3,]
+summary.out$which[2,]
 ```
-
+The best model with 2 predictors is height + width.  
+  
 ```{r}
-best.model <- lm(Weight~Height+Width,data=filter_Perch)
+perch.model <- lm(Weight~Height+Width,data=filter_Perch)
 fullup<-lm(Weight~.,data=filter_Perch)
-summary(best.model)
+summary(perch.model)
 
 ``` 
+The best fit model used height plus width to predict the weight of perch. This model had an adjusted r squared of 0.94, indicating that 94% of the error encountered by using the mean model is explained when using this model. This model had the highest r-squared. The residual standard error was 85.17. This is a pretty high residual standard error.
+
 ```{r}
-anova(fullup,best.model)
+anova(fullup,perch.model)
 ```
 
-We compared the best model, height plus width, with a model which uses all the variables. While height plus width was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value of this ANOVA.  
+We compared the best model, height + width, with a model which uses all the variables. While height + width was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value of this ANOVA.  
 
 ## Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
 
-The best fit model used height plus width to predict the weight of perch. This model had an adjusted r squared of 0.94, indicating that 94% of the error encountered by using the mean model is explained when using this model. The residual standard error was 85.17. This is a pretty high residual standard error. 
-
-While the adjusted r-squared of this model is good and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.879, indicating that the best model is not significantly different from any of the other model options. 
+While the adjusted r-squared of this best perch model is good and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.879, indicating that the best model is not significantly different from any of the other model options. 
 
 Therefore, we do not have enough evidence to reject the null hypothesis. 
 
 # BREAM MODEL
-## Introduction to BREAM Model
-
-<!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?!-->
-
-Using data from ________________, we will draft various regression models for predicting the weight of bream. After drafting the models, we will determine which is the best model for predicting the weight of this species of fish. 
-
-Null hypotheses: 
-There is no statisticially significant difference between the various bream models.They all similarly predict weight.
-
-Alternate hypotheses:
-There is a significant difference in at least one of the bream models' ability to predict weight.
-
-## Methods
-
-<!--Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method.!-->
-
-We used the leaps package to draft all the models and then identify the best model for predicting bream weight. After identifying the best model, we will complete an ANOVA to determine if the best model's ability to predict weight is significantly different than the other models' abilities.  
-
-To create these models, we first cleaned up the data by isolating just the bream data from the larger Fishdata dataframe. Then we removed the species variable, which is a character variable, to allow leaps to properly create the models.  
 
 ```{r}
 filter_Bream<-select(Breamdata,-Species)
@@ -129,12 +112,9 @@ filter_Bream<-select(Breamdata,-Species)
 
 ## Results
 
-### Inferential Results
-
 <!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
 
 ```{r}
-library(leaps)
 regsubsets.out1 <-
     regsubsets(Weight ~ .,
                data = filter_Bream,
@@ -145,63 +125,45 @@ regsubsets.out1 <-
 
 summary.out1 <- summary(regsubsets.out1)
 as.data.frame(summary.out1$outmat)
-library(car)
 subsets(regsubsets.out1,statistic="adjr2",legend="bottomright",main="Figure 2: Adjusted R^2 of Bream Models")
 ```
+  
+From figure 2, we see that the best model with two predictors uses length + height. However, the models with three predictors has a higher adjusted r-squared.  
 
-##Which is best?  
+### Which is best?  
 
 ```{r}
 which.max(summary.out1$adjr2)
 ```
-Figure two visually shows that the combination and length 1, height and width have the highest adjusted R squared. Above, we confirm that option number 3, length 1 + height + width, are the best predictor of weight.   
-
 ```{r}
-summary.out1$which[3,]
+summary.out1$which[2,]
 ```
+The best model overall uses three predictors. The best model with two predictors uses Length2 + height.   
 
 ```{r}
-best.model1 <- lm(Weight~Length1+Height+Width,data=filter_Bream)
+BreamModel <- lm(Weight~Length2+Height,data=filter_Bream)
 fullup1<-lm(Weight~.,data=filter_Bream)
-summary(best.model1)
+summary(BreamModel)
 
 ``` 
+The best fit model with two predictors used length2 + height to predict the weight of bream. This model had an adjusted r squared of  0.9356 , indicating that 93.56% of the error encountered by using the mean model is explained when using this model. The residual standard error was 53.1.
+  
 ```{r}
-anova(fullup1,best.model1)
+anova(fullup1,BreamModel)
 ```
 
-We compared the best model, length 1+height+ width, with a model which uses all the variables. While this model was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value (0.8762) of this ANOVA.  
+We compared the best model with 2 predictors, length 2 + height, with a model which uses all the variables. While the model using length2 + height was initially identified as the best model with 2 predictors, there is no statistically significant difference from the other models. This is determined with the high p-value (0.5805) of this ANOVA.    
 
 ## Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
 
-The best fit model used length1 + height + width to predict the weight of bream. This model had an adjusted r squared of  0.9372 , indicating that 93.72% of the error encountered by using the mean model is explained when using this model. The residual standard error was 52.43. 
 
-While the adjusted r-squared of this model is strong and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.872, indicating that the best model is not significantly different from any of the other model options. 
+While the adjusted r-squared of this model is strong and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.5805, indicating that the best model is not significantly different from any of the other model options. 
 
 Therefore, we do not have enough evidence to reject the null hypothesis.
 
 # SMELT MODEL
-## Introduction to SMELT model
-
-<!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?!-->
-
-Using data from ________________, we will draft various regression models for predicting the weight of smelt. After drafting the models, we will determine which is the best model for predicting the weight of this species of fish. 
-
-Null hypotheses: 
-There is no statistically significant difference between the various smelt models.They all similarly predict weight.
-
-Alternate hypotheses:
-There is a significant difference in at least one of the smelt models' ability to predict weight.
-
-## Methods
-
-<!--Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method.!-->
-
-We used the leaps package to draft all the models and then identify the best model for predicting smelt weight. After identifying the best model, we will complete an ANOVA to determine if the best model's ability to predict weight is significantly different than the other models' abilities.  
-
-To create these models, we first cleaned up the data by isolating just the smelt data from the larger Fishdata dataframe. Then we removed the species variable, which is a character variable, to allow leaps to properly create the models.  
 
 ```{r}
 filter_Smelt<-select(Smeltdata,-Species)
@@ -209,12 +171,9 @@ filter_Smelt<-select(Smeltdata,-Species)
 
 ## Results
 
-### Inferential Results
-
 <!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
 
 ```{r}
-library(leaps)
 regsubsets.out2 <-
     regsubsets(Weight ~ .,
                data = filter_Smelt,
@@ -225,39 +184,40 @@ regsubsets.out2 <-
 
 summary.out2 <- summary(regsubsets.out2)
 as.data.frame(summary.out2$outmat)
-library(car)
 subsets(regsubsets.out2,statistic="adjr2",legend="bottomright",main="Figure 3: Adjusted R^2 of Smelt Models")
 ```
-
-##Which is best?  
+  
+Figure three visually shows that the best model with two predictors uses length 2 and width to predict weight.It has a lower adjusted r squared than the models that use three, four and five predictors.    
+  
+### Which is best?  
 
 ```{r}
 which.max(summary.out2$adjr2)
 ```
-Figure three visually shows that the combination and length 1, length 2, height and width have the highest adjusted R squared. Above, we confirm that option number 4, length 1 + length2 + height + width, is the best predictor of weight.   
 
 ```{r}
-summary.out2$which[3,]
+summary.out2$which[2,]
 ```
 
 ```{r}
-best.model2 <- lm(Weight~Length1+Height+Width,data=filter_Smelt)
+SmeltModel <- lm(Weight~Length2+Width,data=filter_Smelt)
 fullup2<-lm(Weight~.,data=filter_Smelt)
-summary(best.model2)
+summary(SmeltModel)
 
 ``` 
+The best fit model used length1 + length2+ height + width to predict the weight of smelt. This model had an adjusted r squared of  0.9645 , indicating that 96.45% of the error encountered by using the mean model is explained when using this model. The residual standard error was 0.7783. 
+
 ```{r}
-anova(fullup2,best.model2)
+anova(fullup2,SmeltModel)
 ```
 
-We compared the best model, length 1+length2+height+ width, with a model which uses all the variables. While this model  was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value (0.1931) of this ANOVA.  
+We compared the best model, length2 + width, with a model which uses all the variables. While this model  was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value (0.2521) of this ANOVA.  
 
 ## Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
 
-The best fit model used length1 + length2+ height + width to predict the weight of smelt. This model had an adjusted r squared of  0.9637 , indicating that 96.37% of the error encountered by using the mean model is explained when using this model. The residual standard error was 0.7873. This is very low residual standard error.
-
 While the adjusted r-squared and the residual standard error of this model are strong and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.1931, indicating that the best model is not significantly different from any of the other model options. 
 
 Therefore, we do not have enough evidence to reject the null hypothesis.
+This dataset was only made up of 14 observations of smelt. Maybe if the dataset was larger, we would have been able to create a better model.
