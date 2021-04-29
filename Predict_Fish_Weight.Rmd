@@ -25,26 +25,21 @@ Perchdata<-filter(Fishdata,Species=="Perch")
 ```
 # Introduction and Methods
 
-Using data from the Fish.csv, we want to create models for predicting the weight of three different fish species by using other variable for that species. 
+Using data from the Fish.csv, we created various models for predicting the weight of three different fish species. 
 
 First, we created new dataframes for each species of fish. Then we removed the species variable, which is a character variable, from the new dataframes to allow leaps to properly create the models.
 
-Next, for each species we drafted various regression models for predicting the weight of each species. After drafting the models, we determined which is the best model that uses two predictors for predicting the weight of each species of fish. 
+Next, for each species we drafted various regression models for predicting the weight of each species.  We used the leaps package to draft all the models and then identified the best model with two predictors for predicting weight for each species. After identifying the best model with 2 predictors, we completed an ANOVA to determine if the best 2 predictor model's ability to predict weight is significantly different than the best 1 predictor model.
 
-We used the leaps package to draft all the models and then identified the best model with two predictors for predicting weight for each species. After identifying the best model, we completed an ANOVA to determine if the best model's ability to predict weight is significantly different than the other models' abilities. 
+## Null hypotheses:   
+Perch: There is no statistically significant difference between the best 2 predictor model and the best 1 predictor model.They similarly predict the weight.  
+Bream: There is no statistically significant difference between the best 2 predictor model and the best 1 predictor model.They similarly predict the weight.  
+Smelt: There is no statistically significant difference between the best 2 predictor model and the best 1 predictor model.They  similarly predict the weight.  
 
-
-
-
-Null hypotheses:   
-Perch: There is no statistically significant difference between the various models for predicting perch weight.They all similarly predict the weight.  
-Bream: There is no statistically significant difference between the various models for predicting bream weight.They all similarly predict the weight.  
-Smelt: There is no statistically significant difference between the various models for predicting smelt weight.They all similarly predict the weight.  
-
-Alternate hypotheses:  
-Perch: There is a significant difference in at least one of the models' ability to predict the weight of perch.  
-Bream: There is a significant difference in at least one of the models' ability to predict the weight of bream.  
-Smelt: There is a significant difference in at least one of the models' ability to predict the weight of smelt.  
+## Alternate hypotheses:  
+Perch: There is a significant difference between the best 2 predictor model and the best 1 predictor model abilities to predict the weight of perch.  
+Bream: There is a significant difference between the best 2 predictor model and the best 1 predictor model abilities to predict the weight of bream.  
+Smelt: There is a significant difference between the best 2 predictor model and the best 1 predictor model abilities to predict the weight of smelt.  
  
 # PERCH MODEL 
 
@@ -69,8 +64,6 @@ as.data.frame(summary.out$outmat)
 subsets(regsubsets.out,statistic="adjr2",legend="bottomright",main="Figure 1: Adjusted R^2 of Perch Models")
 ```
   
-Figure one visually shows that the combination of height and width is the best model with 2 predictors. Additionally, it is the best model overall as it has the highest adjusted r-squared.  
-
 ### Which is best?  
 
 ```{r}
@@ -80,29 +73,30 @@ which.max(summary.out$adjr2)
 ```{r}
 summary.out$which[2,]
 ```
-The best model with 2 predictors is height + width.  
+The best model with 2 predictors is height + width. 
+Figure one visually shows that the combination of height and width is the best model with 2 predictors. Additionally, it is the best model overall as it has the highest adjusted r-squared.  The best model with one predictor uses height.
   
 ```{r}
 perch.model <- lm(Weight~Height+Width,data=filter_Perch)
-fullup<-lm(Weight~.,data=filter_Perch)
+compare.perch<-lm(Weight~Width,data=filter_Perch)
 summary(perch.model)
 
 ``` 
-The best fit model used height plus width to predict the weight of perch. This model had an adjusted r squared of 0.94, indicating that 94% of the error encountered by using the mean model is explained when using this model. This model had the highest r-squared. The residual standard error was 85.17. This is a pretty high residual standard error.
+The best fit 2 predictor model used height + width to predict the weight of perch. This model had an adjusted r squared of 0.94, indicating that 94% of the error encountered by using the mean model is explained when using this model. This model had the highest r-squared overall. The residual standard error was 85.17. This is a pretty high residual standard error.
 
 ```{r}
-anova(fullup,perch.model)
+anova(compare.perch,perch.model)
 ```
 
-We compared the best model, height + width, with a model which uses all the variables. While height + width was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value of this ANOVA.  
+We compared the height + width model with the best model that uses one variable, width. Height + width was initially identified as the best model overall and the ANOVA identifies that it is significantly different than model which uses just width - according to the very low p-value.
 
 ## Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
 
-While the adjusted r-squared of this best perch model is good and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.879, indicating that the best model is not significantly different from any of the other model options. 
+The adjusted r-squared of this 2 variable perch model is strong and it was identified as the best model. The ANOVA showed a p-value of 0.00112, indicating that the height + width model is significantly different from the best 1 predictor model. There is a very small chance that these results occurred randomly.  
 
-Therefore, we do not have enough evidence to reject the null hypothesis. 
+Therefore, we have enough evidence to reject the null hypothesis. If selecting a model to predict weight, fish researchers should use height + weight. 
 
 # BREAM MODEL
 
@@ -127,8 +121,6 @@ summary.out1 <- summary(regsubsets.out1)
 as.data.frame(summary.out1$outmat)
 subsets(regsubsets.out1,statistic="adjr2",legend="bottomright",main="Figure 2: Adjusted R^2 of Bream Models")
 ```
-  
-From figure 2, we see that the best model with two predictors uses length + height. However, the models with three predictors has a higher adjusted r-squared.  
 
 ### Which is best?  
 
@@ -138,30 +130,30 @@ which.max(summary.out1$adjr2)
 ```{r}
 summary.out1$which[2,]
 ```
-The best model overall uses three predictors. The best model with two predictors uses Length2 + height.   
-
+The best model overall uses three predictors. The best model with two predictors uses Length2 + height.
+From figure 2, we see that the best model with two predictors uses length + height. However, the models with three predictors has a higher adjusted r-squared. The best model with one predictor uses height. 
+  
 ```{r}
 BreamModel <- lm(Weight~Length2+Height,data=filter_Bream)
-fullup1<-lm(Weight~.,data=filter_Bream)
+compare.bream<-lm(Weight~Height,data=filter_Bream)
 summary(BreamModel)
 
 ``` 
 The best fit model with two predictors used length2 + height to predict the weight of bream. This model had an adjusted r squared of  0.9356 , indicating that 93.56% of the error encountered by using the mean model is explained when using this model. The residual standard error was 53.1.
   
 ```{r}
-anova(fullup1,BreamModel)
+anova(compare.bream,BreamModel)
 ```
 
-We compared the best model with 2 predictors, length 2 + height, with a model which uses all the variables. While the model using length2 + height was initially identified as the best model with 2 predictors, there is no statistically significant difference from the other models. This is determined with the high p-value (0.5805) of this ANOVA.    
+We compared the best model with 2 predictors, length 2 + height, with the best model with 1 predictor. There is a statistically significant difference between these two models. This is determined with the low p-value (0.03638) of this ANOVA.   
 
 ## Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
 
+There is a significant difference between the best model with two predictors and the best model with just one predictor. Additionally, figure 2 shows a that the length2 + height model has a higher adjusted r-squared than the height model. There is a very small chance that these results occurred randomly. 
 
-While the adjusted r-squared of this model is strong and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.5805, indicating that the best model is not significantly different from any of the other model options. 
-
-Therefore, we do not have enough evidence to reject the null hypothesis.
+With a significant difference between the models, we have enough evidence to reject the null hypothesis and state that there is a difference between the two models. Bream researchers should select the length2+height model over the height model. 
 
 # SMELT MODEL
 
@@ -187,8 +179,6 @@ as.data.frame(summary.out2$outmat)
 subsets(regsubsets.out2,statistic="adjr2",legend="bottomright",main="Figure 3: Adjusted R^2 of Smelt Models")
 ```
   
-Figure three visually shows that the best model with two predictors uses length 2 and width to predict weight.It has a lower adjusted r squared than the models that use three, four and five predictors.    
-  
 ### Which is best?  
 
 ```{r}
@@ -198,26 +188,28 @@ which.max(summary.out2$adjr2)
 ```{r}
 summary.out2$which[2,]
 ```
-
+Figure three visually shows that the best model with two predictors uses length 2 and width to predict weight. It has a lower adjusted r squared than the models that use three, four and five predictors.   The best model with one predictor uses Length2. The best model overall uses four predictors.
+  
 ```{r}
 SmeltModel <- lm(Weight~Length2+Width,data=filter_Smelt)
-fullup2<-lm(Weight~.,data=filter_Smelt)
+compare.smelt<-lm(Weight~Length2,data=filter_Smelt)
 summary(SmeltModel)
 
 ``` 
-The best fit model used length1 + length2+ height + width to predict the weight of smelt. This model had an adjusted r squared of  0.9645 , indicating that 96.45% of the error encountered by using the mean model is explained when using this model. The residual standard error was 0.7783. 
+The best fit model with 2 predicotrs used length2 + width to predict the weight of smelt. This model had an adjusted r squared of  0.9645 , indicating that 96.45% of the error encountered by using the mean model is explained when using this model. The residual standard error was 0.7783. 
 
 ```{r}
-anova(fullup2,SmeltModel)
+anova(compare.smelt,SmeltModel)
 ```
 
-We compared the best model, length2 + width, with a model which uses all the variables. While this model  was initially identified as the best model, there is no statistically significant difference from the other models. This is determined with the high p-value (0.2521) of this ANOVA.  
+We completed an ANOVA to compare  length2 + width model with the best model which uses just one predictor. The ANOVA returned a p-value of 0.001642, indicating that these two models are significantly different from one another. There is a very small chance that this occurred by chance.
 
 ## Discussion and Conclusion
 
 <!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
 
-While the adjusted r-squared and the residual standard error of this model are strong and it was identified as the best model, we cannot say that this is statistically the best model due to the ANOVA test. The ANOVA showed a p-value of 0.1931, indicating that the best model is not significantly different from any of the other model options. 
+There is a significant difference between the best model with two predictors and the best model with just one predictor. Figure 3 shows that the length2 + width model has a higher adjusted r-squared than the length2 model. There is a very small chance that these results occurred randomly. 
 
-Therefore, we do not have enough evidence to reject the null hypothesis.
-This dataset was only made up of 14 observations of smelt. Maybe if the dataset was larger, we would have been able to create a better model.
+With a significant difference between the models, we have enough evidence to reject the null hypothesis and state that there is a difference between the models. Smelt researchers should select the length2+width model over that just length2 model. 
+
+Therefore, we have enough evidence to reject the null hypothesis. One should note that this dataset was only made up of 14 observations of smelt. Maybe if the dataset was larger, we would have been able to create a better model.
